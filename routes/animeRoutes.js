@@ -1,12 +1,20 @@
-import { verifyToken } from "../middleware/authmiddleware.js";
+import express from "express";
+import Anime from "../models/anime.js";
 
-router.post("/", verifyToken, async (req, res) => {
-  const anime = new Anime({ ...req.body, userId: req.user._id });
+const router = express.Router();
+
+// Anime list page
+router.get("/", async (req, res) => {
+  const { userId } = req.query;
+  const list = await Anime.find({ userId });
+  res.render("anime", { list, userId });
+});
+
+// Add new anime
+router.post("/", async (req, res) => {
+  const anime = new Anime(req.body);
   await anime.save();
-  res.status(201).json(anime);
+  res.redirect(`/anime?userId=${anime.userId}`);
 });
 
-router.get("/", verifyToken, async (req, res) => {
-  const list = await Anime.find({ userId: req.user._id });
-  res.json(list);
-});
+export default router;
