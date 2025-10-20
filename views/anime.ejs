@@ -1,32 +1,174 @@
 <!DOCTYPE html>
-<html>
-<head><title>My Anime List</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Anime List</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    img { width: 100px; border-radius: 6px; }
+    .anime-card, .anime-list li { border: 1px solid #ccc; padding: 10px; margin: 10px 0; display: flex; gap: 10px; align-items: center; }
+    .anime-list { padding: 0; list-style: none; }
+    input, select { margin-left: 5px; }
+  </style>
+</head>
 <body>
-  <h1>📺 My Anime List</h1>
 
-  <form action="/anime" method="POST">
-    <input type="hidden" name="userId" value="<%= userId %>">
-    <input type="text" name="title" placeholder="Title" required>
-    <input type="text" name="genre" placeholder="Genre (comma separated)">
-    <input type="number" name="episodes" placeholder="Episodes">
-    <input type="number" name="rating" placeholder="Rating (0–10)">
-    <select name="status">
-      <option>Plan to Watch</option>
-      <option>Watching</option>
-      <option>Completed</option>
-      <option>Dropped</option>
-    </select>
-    <button type="submit">Add Anime</button>
+  <h1>Welcome, <%= user.username %>! 🎬</h1>
+  <button id="logoutBtn">Logout</button>
+
+  <h2>Search Anime</h2>
+  <form id="searchForm">
+    <input type="text" id="search" placeholder="Enter anime title..." required>
+    <button type="submit">Search</button>
   </form>
 
-  <ul>
-    <% list.forEach(anime => { %>
-      <li>
-        <b><%= anime.title %></b> — <%= anime.status %> (<%= anime.rating %>/10)
+  <div id="searchResults"></div>
+
+  <h2>My Saved Anime</h2>
+  <ul id="animeList" class="anime-list">
+    <% animeList.forEach(a => { %>
+      <li data-id="<%= a._id %>">
+        <img src="<%= a.image %>" width="60" />
+        <strong><%= a.title %></strong>
+        <div>
+          Status:
+          <select class="statusSelect">
+            <option <%= a.status === "Plan to Watch" ? "selected" : "" %>>Plan to Watch</option>
+            <option <%= a.status === "Watching" ? "selected" : "" %>>Watching</option>
+            <option <%= a.status === "Completed" ? "selected" : "" %>>Completed</option>
+            <option <%= a.status === "Dropped" ? "selected" : "" %>>Dropped</option>
+          </select>
+        </div>
+        <div>
+          Episodes Watched:
+          <input type="number" class="epInput" value="<%= a.episodesWatched || 0 %>" min="0">
+        </div>
+        <div>
+          Rating:
+          <input type="number" class="rateInput" value="<%= a.rating || 0 %>" min="0" max="10">
+        </div>
+        <button class="updateBtn">Update</button>
       </li>
     <% }) %>
   </ul>
 
-  <a href="/auth/login">Logout</a>
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) window.location.href = "/auth/login";
+
+    // Logout button
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      window.location.href = "/auth/login";
+    });
+
+    // Update existing anime
+    async function setupUpdateButtons() {
+      document.querySelectorAll(".updateBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const li = btn.closest("li");
+          const id = li.dataset.id;
+          const status = li.querySelector(".statusSelect").value;
+          const episodesWatched = li.querySelector(".epInput").value;
+          const rating = li.querySelector(".rateInput").value;
+
+          await fetch("/anime/" + id, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": token
+            },
+            body: JSON.stringify({ status, episodesWatched, rating })
+          });
+
+          loadUserAnime();
+        });
+      });
+    }
+
+    // Load user's saved anime dynamically
+    async function loadUserAnime() {
+      const res = await fetch("/anime", { headers: { "Authorization": token } });
+      const list = await res.json();
+      const ul = document.getElementById("animeList");
+      ul.innerHTML = "";
+
+      list.forEach(a => {
+        const li = document.createElement("li");
+        li.dataset.id = a._id;
+        li.innerHTML = `
+          <img src="${a.image}" width="60" />
+          <strong>${a.title}</strong>
+          <div>
+            Status:
+            <select class="statusSelect">
+              <option ${a.status === "Plan to Watch" ? "selected" : ""}>Plan to Watch</option>
+              <option ${a.status === "Watching" ? "selected" : ""}>Watching</option>
+              <option ${a.status === "Completed" ? "selected" : ""}>Completed</option>
+              <option ${a.status === "Dropped" ? "selected" : ""}>Dropped</option>
+            </select>
+          </div>
+          <div>
+            Episodes Watched:
+            <input type="number" class="epInput" value="${a.episodesWatched || 0}" min="0">
+          </div>
+          <div>
+            Rating:
+            <input type="number" class="rateInput" value="${a.rating || 0}" min="0" max="10">
+          </div>
+          <button class="updateBtn">Update</button>
+        `;
+        ul.appendChild(li);
+      });
+
+      setupUpdateButtons();
+    }
+
+    loadUserAnime();
+
+    // Search anime from Jikan API
+    document.getElementById("searchForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const query = document.getElementById("search").value;
+      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+
+      const resultsDiv = document.getElementById("searchResults");
+      resultsDiv.innerHTML = "";
+
+      data.data.forEach(anime => {
+        const card = document.createElement("div");
+        card.className = "anime-card";
+        card.innerHTML = `
+          <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+          <div>
+            <h3>${anime.title}</h3>
+            <p>${anime.episodes || "?"} episodes</p>
+            <button class="addBtn">Add to List</button>
+          </div>
+        `;
+        card.querySelector(".addBtn").addEventListener("click", async () => {
+          await fetch("/anime", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": token
+            },
+            body: JSON.stringify({
+              title: anime.title,
+              episodes: anime.episodes,
+              image: anime.images.jpg.image_url,
+              status: "Plan to Watch",
+              rating: 0,
+              episodesWatched: 0
+            })
+          });
+          loadUserAnime();
+        });
+        resultsDiv.appendChild(card);
+      });
+    });
+  </script>
+
 </body>
 </html>

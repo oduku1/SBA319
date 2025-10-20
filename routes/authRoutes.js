@@ -23,9 +23,14 @@ router.post("/register", async (req, res) => {
 // Login user
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email, password });
-  if (!user) return res.status(401).send("Invalid credentials");
-  res.redirect(`/anime?userId=${user._id}`);
+  const user = await User.findOne({ email });
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  // Simple token = user ID
+  const token = user._id.toString();
+  res.json({ token, user });
 });
 
 export default router;

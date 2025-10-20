@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import authRoutes from "./routes/authRoutes.js";
 import animeRoutes from "./routes/animeRoutes.js";
+import authMiddleware from "./middleware/authmiddleware.js"; // important!
 
 dotenv.config();
 const app = express();
@@ -27,5 +28,20 @@ app.use("/anime", animeRoutes);
 
 // Home redirects to login
 app.get("/", (req, res) => res.redirect("/auth/login"));
+
+// Anime page route (renders EJS)
+app.get("/anime-page", async (req, res) => {
+    const token = req.query.token;
+    if (!token) return res.redirect("/auth/login"); // no token → back to login
+  
+    const User = mongoose.model("User");
+    const user = await User.findById(token);
+    if (!user) return res.redirect("/auth/login"); // invalid token
+  
+    const Anime = mongoose.model("Anime");
+    const animeList = await Anime.find({ userId: user._id });
+  
+    res.render("anime", { user, animeList });
+  });
 
 app.listen(5050, () => console.log("🚀 Server running on http://localhost:5050"));
