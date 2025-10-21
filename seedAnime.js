@@ -13,18 +13,15 @@ const seed = async () => {
     });
     console.log("Connected to MongoDB");
 
-    // Clear existing data
     await User.deleteMany({});
     await Anime.deleteMany({});
 
-    // Insert users
     const users = await User.insertMany([
       { username: "1", email: "1@1.com", password: "1" },
       { username: "2", email: "2@2.com", password: "2" },
-      { username: "BobTheCar", email: "Bob@gmail.com", password: "Bob123" }
+      { username: "BobTheCar", email: "Bob@gmail.com", password: "12345" }
     ]);
 
-    // Insert anime
     const animes = [
       {
         title: "Chainsaw Man Movie: Reze-hen",
@@ -57,7 +54,6 @@ const seed = async () => {
         userId: users[1]._id,
       },
 
-      // Bob's anime
       {
         title: "One Piece",
         genre: ["Action", "Adventure", "Comedy"],
