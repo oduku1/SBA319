@@ -52,7 +52,7 @@
         font-size: 15px;
       }
 
-      
+
       button {
         margin-top: 10px;
         padding: 10px;
@@ -97,4 +97,42 @@
       <p>Don't have an account? <a href="/auth/register">Register Here</a></p>
     </div>
   </body>
+  <script>
+    const form = document.getElementById("loginForm");
+  
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); // prevent normal form POST
+  
+      const email = form.email.value.trim();
+      const password = form.password.value.trim();
+  
+      try {
+        const res = await fetch("/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
+  
+        if (!res.ok) {
+          throw new Error("Failed to connect to server");
+        }
+  
+        const data = await res.json();
+  
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          // redirect to anime page
+          window.location.href = "/anime-page?token=" + encodeURIComponent(data.token);
+        } else {
+          alert(data.error || "Invalid email or password");
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        alert("Something went wrong. Please try again later.");
+      }
+    });
+  </script>
+  
 </html>

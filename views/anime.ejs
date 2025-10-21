@@ -4,11 +4,135 @@
   <meta charset="UTF-8">
   <title>My Anime List</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    img { width: 100px; border-radius: 6px; }
-    .anime-card, .anime-list li { border: 1px solid #ccc; padding: 10px; margin: 10px 0; display: flex; gap: 10px; align-items: center; }
-    .anime-list { padding: 0; list-style: none; }
-    input, select { margin-left: 5px; }
+    body {
+      background: #191a24;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1, h2 {
+      color: white;
+      text-align: center;
+    }
+
+    #logoutBtn {
+      background: #e74c3c;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    #logoutBtn:hover {
+      background: #c0392b;
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+      gap: 10px;
+    }
+
+    input, select {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 160px;
+    }
+
+    button {
+      background: #04aa6d;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #039e65;
+    }
+
+    .deleteBtn {
+      background: #e74c3c;
+      margin-left: 6px;
+    }
+
+    .deleteBtn:hover {
+      background: #c0392b;
+    }
+
+    #searchResults, #animeList {
+      width: 90%;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+
+    .anime-card, .anime-list li {
+      background: #23463f;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+
+    .anime-card:hover, .anime-list li:hover {
+      transform: translateY(-2px);
+    }
+
+    img {
+      width: 80px;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    #msg {
+      text-align: center;
+      margin: 10px 0;
+      color: #00ffe5;
+      font-weight: bold;
+    }
+
+    strong, h3 {
+      color: #00ffe5;
+    }
+
+    select, input[type="number"] {
+      background: #1b2a26;
+      color: white;
+      border: 1px solid #04aa6d;
+    }
+
+    @media (max-width: 700px) {
+      .anime-card, .anime-list li {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -22,71 +146,27 @@
     <button type="submit">Search</button>
   </form>
 
+  <div id="msg"></div>
   <div id="searchResults"></div>
 
   <h2>My Saved Anime</h2>
-  <ul id="animeList" class="anime-list">
-    <% animeList.forEach(a => { %>
-      <li data-id="<%= a._id %>">
-        <img src="<%= a.image %>" width="60" />
-        <strong><%= a.title %></strong>
-        <div>
-          Status:
-          <select class="statusSelect">
-            <option <%= a.status === "Plan to Watch" ? "selected" : "" %>>Plan to Watch</option>
-            <option <%= a.status === "Watching" ? "selected" : "" %>>Watching</option>
-            <option <%= a.status === "Completed" ? "selected" : "" %>>Completed</option>
-            <option <%= a.status === "Dropped" ? "selected" : "" %>>Dropped</option>
-          </select>
-        </div>
-        <div>
-          Episodes Watched:
-          <input type="number" class="epInput" value="<%= a.episodesWatched || 0 %>" min="0">
-        </div>
-        <div>
-          Rating:
-          <input type="number" class="rateInput" value="<%= a.rating || 0 %>" min="0" max="10">
-        </div>
-        <button class="updateBtn">Update</button>
-      </li>
-    <% }) %>
-  </ul>
+  <ul id="animeList" class="anime-list"></ul>
 
   <script>
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/auth/login";
 
-    // Logout button
     document.getElementById("logoutBtn").addEventListener("click", () => {
       localStorage.removeItem("token");
       window.location.href = "/auth/login";
     });
 
-    // Update existing anime
-    async function setupUpdateButtons() {
-      document.querySelectorAll(".updateBtn").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const li = btn.closest("li");
-          const id = li.dataset.id;
-          const status = li.querySelector(".statusSelect").value;
-          const episodesWatched = li.querySelector(".epInput").value;
-          const rating = li.querySelector(".rateInput").value;
-
-          await fetch("/anime/" + id, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": token
-            },
-            body: JSON.stringify({ status, episodesWatched, rating })
-          });
-
-          loadUserAnime();
-        });
-      });
+    function showMessage(text) {
+      const msg = document.getElementById("msg");
+      msg.textContent = text;
+      setTimeout(() => msg.textContent = "", 2000);
     }
 
-    // Load user's saved anime dynamically
     async function loadUserAnime() {
       const res = await fetch("/anime", { headers: { "Authorization": token } });
       const list = await res.json();
@@ -97,7 +177,7 @@
         const li = document.createElement("li");
         li.dataset.id = a._id;
         li.innerHTML = `
-          <img src="${a.image}" width="60" />
+          <img src="${a.image}" alt="${a.title}">
           <strong>${a.title}</strong>
           <div>
             Status:
@@ -116,59 +196,123 @@
             Rating:
             <input type="number" class="rateInput" value="${a.rating || 0}" min="0" max="10">
           </div>
-          <button class="updateBtn">Update</button>
+          <div>
+            <button class="updateBtn">Update</button>
+            <button class="deleteBtn">Delete</button>
+          </div>
         `;
         ul.appendChild(li);
       });
 
-      setupUpdateButtons();
+      setupActionButtons();
     }
 
-    loadUserAnime();
+    function setupActionButtons() {
+      document.querySelectorAll(".updateBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const li = btn.closest("li");
+          const id = li.dataset.id;
+          const status = li.querySelector(".statusSelect").value;
+          const episodesWatched = li.querySelector(".epInput").value;
+          const rating = li.querySelector(".rateInput").value;
 
-    // Search anime from Jikan API
+          await fetch("/anime/" + id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", "Authorization": token },
+            body: JSON.stringify({ status, episodesWatched, rating })
+          });
+          showMessage("✅ Updated!");
+          loadUserAnime();
+        });
+      });
+
+      document.querySelectorAll(".deleteBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const li = btn.closest("li");
+          const id = li.dataset.id;
+          if (!confirm("Delete this anime?")) return;
+
+          await fetch("/anime/" + id, {
+            method: "DELETE",
+            headers: { "Authorization": token }
+          });
+          showMessage("🗑️ Deleted!");
+          loadUserAnime();
+        });
+      });
+    }
+
     document.getElementById("searchForm").addEventListener("submit", async e => {
       e.preventDefault();
       const query = document.getElementById("search").value;
-      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=10`);
+        const data = await res.json();
 
-      const resultsDiv = document.getElementById("searchResults");
-      resultsDiv.innerHTML = "";
+        if (!data.data || data.data.length === 0) {
+          showMessage("⚠️ No results found.");
+          return;
+        }
 
-      data.data.forEach(anime => {
-        const card = document.createElement("div");
-        card.className = "anime-card";
-        card.innerHTML = `
-          <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
-          <div>
-            <h3>${anime.title}</h3>
-            <p>${anime.episodes || "?"} episodes</p>
-            <button class="addBtn">Add to List</button>
-          </div>
-        `;
-        card.querySelector(".addBtn").addEventListener("click", async () => {
-          await fetch("/anime", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": token
-            },
-            body: JSON.stringify({
-              title: anime.title,
-              episodes: anime.episodes,
-              image: anime.images.jpg.image_url,
-              status: "Plan to Watch",
-              rating: 0,
-              episodesWatched: 0
-            })
+        const resultsDiv = document.getElementById("searchResults");
+        resultsDiv.innerHTML = "";
+
+        data.data.forEach(anime => {
+          const card = document.createElement("div");
+          card.className = "anime-card";
+          card.innerHTML = `
+            <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
+            <div>
+              <h3>${anime.title}</h3>
+              <p>${anime.episodes || "?"} episodes</p>
+              <button class="addBtn">Add to List</button>
+            </div>
+          `;
+
+          card.querySelector(".addBtn").addEventListener("click", async () => {
+            try {
+              // Fetch full anime details for genres
+              const detailRes = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
+              const detailData = await detailRes.json();
+              const genres = Array.isArray(detailData.data.genres)
+  ? detailData.data.genres.map(g => g.name)
+  : [];
+
+              const response = await fetch("/anime", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": token },
+                body: JSON.stringify({
+                  title: anime.title,
+                  episodes: anime.episodes || 0,
+                  genre: genres,
+                  image: anime.images.jpg.image_url,
+                  status: "Plan to Watch",
+                  rating: 0,
+                  episodesWatched: 0
+                })
+              });
+
+              if (response.ok) {
+                showMessage("✅ Added to list!");
+                loadUserAnime();
+              } else {
+                showMessage("⚠️ Failed to add.");
+              }
+            } catch (err) {
+              console.error(err);
+              showMessage("⚠️ Error fetching anime details.");
+            }
           });
-          loadUserAnime();
-        });
-        resultsDiv.appendChild(card);
-      });
-    });
-  </script>
 
+          resultsDiv.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        showMessage("⚠️ Search failed. Try again.");
+      }
+    });
+
+    loadUserAnime();
+  </script>
 </body>
 </html>

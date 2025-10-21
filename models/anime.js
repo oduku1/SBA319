@@ -1,3 +1,4 @@
+// models/Anime.js
 import mongoose from "mongoose";
 
 const animeSchema = new mongoose.Schema({
@@ -10,7 +11,9 @@ const animeSchema = new mongoose.Schema({
     enum: ["Plan to Watch", "Watching", "Completed", "Dropped"],
     default: "Plan to Watch"
   },
+  episodesWatched: { type: Number, default: 0 },
+  image: String,
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
 });
 
-export default mongoose.model("Anime", animeSchema,"shows");
+export default mongoose.model("Anime", animeSchema, "shows");

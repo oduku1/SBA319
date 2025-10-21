@@ -1,39 +1,69 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Anime from "./models/anime.js"; // adjust path if needed
+import User from "./models/User.js"; // your user schema
+import Anime from "./models/Anime.js"; // your anime schema
 
 dotenv.config();
 
-const ATLAS_URI = process.env.ATLAS_URI;
-await mongoose.connect(ATLAS_URI);
-console.log("✅ Connected to MongoDB");
+const seed = async () => {
+  try {
+    await mongoose.connect(process.env.ATLAS_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Connected to MongoDB");
 
-// Replace with your MyAnimeList username
-const username = "your_mal_username";
+    await User.deleteMany({});
+    await Anime.deleteMany({});
 
-try {
-  const response = await fetch(`https://api.jikan.moe/v4/users/${username}/animelist?status=watching`);
-  const data = await response.json();
+    // Create users
+    const users = await User.insertMany([
+      { username: "1", email: "1@1.com", password: "1" },
+      { username: "2", email: "2@2.com", password: "2" },
+    ]);
 
-  if (!data.data || data.data.length === 0) {
-    console.log("❌ No anime found or invalid username");
+    // Example anime data with genres
+    const animes = [
+      {
+        title: "Chainsaw Man Movie: Reze-hen",
+        genre: ["Action", "Horror", "Supernatural"],
+        episodes: 1,
+        rating: 0,
+        status: "Dropped",
+        episodesWatched: 0,
+        image: "https://cdn.myanimelist.net/images/anime/1763/150638.jpg",
+        userId: users[0]._id,
+      },
+      {
+        title: "Demon Slayer: Kimetsu no Yaiba",
+        genre: ["Action", "Adventure", "Supernatural"],
+        episodes: 26,
+        rating: 0,
+        status: "Plan to Watch",
+        episodesWatched: 0,
+        image: "https://cdn.myanimelist.net/images/anime/1286/99889.jpg",
+        userId: users[0]._id,
+      },
+      {
+        title: "Attack on Titan",
+        genre: ["Action", "Drama", "Fantasy"],
+        episodes: 75,
+        rating: 0,
+        status: "Watching",
+        episodesWatched: 20,
+        image: "https://cdn.myanimelist.net/images/anime/10/47347.jpg",
+        userId: users[1]._id,
+      },
+    ];
+
+    await Anime.insertMany(animes);
+
+    console.log("Seed data inserted!");
     process.exit();
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
   }
+};
 
-  const animeList = data.data.map((entry) => ({
-    title: entry.entry.title,
-    score: entry.score,
-    progress: `${entry.watched_episodes}/${entry.total_episodes || "?"}`,
-    type: entry.entry.type,
-    status: "Watching",
-    image: entry.entry.images.jpg.image_url,
-    userId: "YOUR_USER_ID_HERE" // optional
-  }));
-
-  await Anime.insertMany(animeList);
-  console.log(`🎉 Inserted ${animeList.length} anime into MongoDB!`);
-} catch (err) {
-  console.error("❌ Error seeding data:", err);
-}
-
-mongoose.connection.close();
+seed();

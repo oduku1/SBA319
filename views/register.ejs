@@ -1,29 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Register</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 20px;
-      }
-      form {
-        display: flex;
-        flex-direction: column;
-        max-width: 300px;
-      }
-      input {
-        margin-bottom: 10px;
-        padding: 5px;
-      }
-      button {
-        padding: 5px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Register</h1>
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <style>
+    body {
+      background: #191a24;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    #container {
+      width: 320px;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid white;
+      background: #23463f;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    input {
+      margin: 10px 0;
+      padding: 10px;
+      width: 85%;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 85%;
+      border: none;
+      border-radius: 6px;
+      background: #04aa6d;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #039e65;
+    }
+
+    p {
+      color: white;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #00ffe5;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Create Account</h1>
 
     <form id="registerForm" method="POST" action="/auth/register">
       <input type="text" name="username" placeholder="Username" required />
@@ -33,5 +93,6 @@
     </form>
 
     <p>Already have an account? <a href="/auth/login">Login</a></p>
-  </body>
+  </div>
+</body>
 </html>
