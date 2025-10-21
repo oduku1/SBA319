@@ -272,7 +272,6 @@
 
           card.querySelector(".addBtn").addEventListener("click", async () => {
             try {
-              // Fetch full anime details for genres
               const detailRes = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
               const detailData = await detailRes.json();
               const genres = Array.isArray(detailData.data.genres)

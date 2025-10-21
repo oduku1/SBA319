@@ -1,4 +1,3 @@
-// models/Anime.js
 import mongoose from "mongoose";
 
 const animeSchema = new mongoose.Schema({

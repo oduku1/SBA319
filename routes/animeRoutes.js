@@ -4,13 +4,11 @@ import authMiddleware from "../middleware/authmiddleware.js";
 
 const router = express.Router();
 
-// Get user's anime
 router.get("/", authMiddleware, async (req, res) => {
   const animeList = await Anime.find({ userId: req.user._id });
   res.json(animeList);
 });
 
-// Add anime (✅ this saves to MongoDB)
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, episodes, image, status, rating, episodesWatched } = req.body;
@@ -31,7 +29,6 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-// Update anime
 router.put("/:id", authMiddleware, async (req, res) => {
   const { status, rating, episodesWatched } = req.body;
   const updatedAnime = await Anime.findByIdAndUpdate(
@@ -42,7 +39,6 @@ router.put("/:id", authMiddleware, async (req, res) => {
   res.json(updatedAnime);
 });
 
-// Delete anime
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     await Anime.findOneAndDelete({ _id: req.params.id, userId: req.user._id });

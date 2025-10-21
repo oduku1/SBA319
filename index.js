@@ -9,27 +9,21 @@ import authMiddleware from "./middleware/authmiddleware.js"; // important!
 dotenv.config();
 const app = express();
 
-// Setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// EJS setup
 app.set("view engine", "ejs");
 app.set("views", path.join(path.resolve(), "views"));
 
-// MongoDB connection
 mongoose.connect(process.env.ATLAS_URI)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ Connection error:", err));
 
-// Routes
 app.use("/auth", authRoutes);
 app.use("/anime", animeRoutes);
 
-// Home redirects to login
 app.get("/", (req, res) => res.redirect("/auth/login"));
 
-// Anime page route (renders EJS)
 app.get("/anime-page", async (req, res) => {
     const token = req.query.token;
     if (!token) return res.redirect("/auth/login"); // no token → back to login
