@@ -12,12 +12,18 @@
         align-items: center;
         height: 100vh;
         margin: 0;
+        flex-direction: column;
       }
       header {
   color: white;
   font-size: 24px;
   margin-bottom: 20px;
-}
+} h1 {
+      color: white;
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
+
 
       #container {
         width: 320px;
@@ -86,9 +92,9 @@
     </style>
   </head>
   <body>
-    <header>Anime List</header>
+    <header>The <Script:module></Script:module>croll of Shows</header>
     <div id="container">
-      <h1>Login Here</h1>
+      <h1>Login</h1>
       <form id="loginForm">
         <input type="email" name="email" placeholder="Email" required />
         <input type="password" name="password" placeholder="Password" required />

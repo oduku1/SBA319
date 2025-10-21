@@ -58,7 +58,7 @@ const seed = async () => {
         title: "One Piece",
         genre: ["Action", "Adventure", "Comedy"],
         episodes: 1050,
-        rating: 0,
+        rating: 10,
         status: "Watching",
         episodesWatched: 500,
         image: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
@@ -74,36 +74,7 @@ const seed = async () => {
         image: "https://cdn.myanimelist.net/images/anime/10/78745.jpg",
         userId: users[2]._id,
       },
-      {
-        title: "Jujutsu Kaisen",
-        genre: ["Action", "Supernatural", "Fantasy"],
-        episodes: 24,
-        rating: 0,
-        status: "Plan to Watch",
-        episodesWatched: 0,
-        image: "https://cdn.myanimelist.net/images/anime/1184/109114.jpg",
-        userId: users[2]._id,
-      },
-      {
-        title: "Tokyo Revengers",
-        genre: ["Action", "Drama", "Romance"],
-        episodes: 24,
-        rating: 0,
-        status: "Plan to Watch",
-        episodesWatched: 0,
-        image: "https://cdn.myanimelist.net/images/anime/1653/108111.jpg",
-        userId: users[2]._id,
-      },
-      {
-        title: "Spy x Family",
-        genre: ["Action", "Comedy", "Slice of Life"],
-        episodes: 12,
-        rating: 0,
-        status: "Plan to Watch",
-        episodesWatched: 0,
-        image: "https://cdn.myanimelist.net/images/anime/1336/124223.jpg",
-        userId: users[2]._id,
-      }
+      
     ];
 
     await Anime.insertMany(animes);
