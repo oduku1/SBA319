@@ -66,9 +66,7 @@ npm install
 Create a `.env` file in the root directory:
 
 ```
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-PORT=3000
+ATLAS_URI=your_mongodb_connection_string
 ```
 
 ### 4. Run the App
@@ -123,14 +121,6 @@ const animeSchema = new mongoose.Schema({
 4. View and update your saved anime in the “My Saved Anime” section.
 
 ---
-
-## 🐛 Troubleshooting
-
-### ❌ Error: `Cannot read properties of undefined (reading '_id')`
-This happens if `req.user` is undefined.
-- If you have authentication: ensure your JWT middleware sets `req.user`.
-- If not using authentication yet, temporarily hardcode a `userId` in the backend route.
-
 
 
 ## 📜 License
